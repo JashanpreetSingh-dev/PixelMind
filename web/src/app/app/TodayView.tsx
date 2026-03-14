@@ -300,14 +300,14 @@ export function TodayView({
       {/* Header */}
       <header className="flex items-start justify-between gap-2">
         <div className="space-y-0.5">
-          <p className="text-xs text-text-faint">
-            {new Date().toLocaleDateString(undefined, {
+          <p className="text-xs text-text-faint" suppressHydrationWarning>
+            {new Date(todayIso + "T12:00:00").toLocaleDateString("en-US", {
               weekday: "long",
               month: "short",
               day: "numeric",
             })}
           </p>
-          <h1 className="text-2xl font-medium tracking-tight text-text-primary">
+          <h1 className="text-2xl font-medium tracking-tight text-text-primary" suppressHydrationWarning>
             {userName ? `${greeting}, ${userName}` : greeting}
           </h1>
           {/* Progress counter */}

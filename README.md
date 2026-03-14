@@ -145,6 +145,12 @@ In the [Clerk Dashboard](https://dashboard.clerk.com), add your Vercel URLs to *
 
 Then deploy; the first push to `main` or a new deployment will build and go live.
 
+### Deploying the web app on Railway (or elsewhere)
+
+If you deploy the **web** app on Railway (or any other host), set **`NEXT_PUBLIC_API_BASE_URL`** to your **production API URL** (e.g. `https://pixelmind-api.up.railway.app`). If this is missing or set to `http://localhost:8000`, the browser will try to call localhost from the production site and block it (CORS / Private Network Access). After changing it, **redeploy** the web app so the new value is baked into the build.
+
+On the **API** service, set **`CORS_ORIGINS`** to include your frontend origin (e.g. `https://pixelmind-production.up.railway.app`).
+
 ## PWA
 
 The web app is a Progressive Web App (installable, offline-capable). Icons and manifest live under `web/public/` and `web/src/app/manifest.ts`.
