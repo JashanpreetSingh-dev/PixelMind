@@ -118,7 +118,7 @@ export default function OnboardingContent() {
                     ? "border-transparent bg-accent/15 ring-2 ring-accent"
                     : "border-border-default bg-bg-surface hover:border-border-default/80"
                 )}
-                style={isSelected ? { ringColor: habit.color } : undefined}
+                style={isSelected ? ({ "--tw-ring-color": habit.color } as React.CSSProperties) : undefined}
               >
                 <span
                   className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-base"
