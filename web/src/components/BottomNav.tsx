@@ -2,19 +2,25 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Home, BookMarked, Activity, Settings } from "lucide-react";
+import {
+  LayoutDashboard,
+  BookOpen,
+  Sparkles,
+  SlidersHorizontal,
+  type LucideIcon,
+} from "lucide-react";
+import { cn } from "@/lib/utils";
 
-/** Bottom nav uses Lucide React (lucide-react) — 1000+ consistent outline icons. See https://lucide.dev */
-const items = [
-  { href: "/app", label: "Home", Icon: Home },
-  { href: "/app/journal", label: "Journal", Icon: BookMarked },
-  { href: "/app/insights", label: "Insights", Icon: Activity },
-  { href: "/app/settings", label: "Settings", Icon: Settings },
-] as const;
+const items: { href: string; label: string; Icon: LucideIcon }[] = [
+  { href: "/app", label: "Home", Icon: LayoutDashboard },
+  { href: "/app/journal", label: "Journal", Icon: BookOpen },
+  { href: "/app/insights", label: "Insights", Icon: Sparkles },
+  { href: "/app/settings", label: "Settings", Icon: SlidersHorizontal },
+];
 
-const ICON_SIZE = 24;
-const ICON_STROKE = 1.75;
-const ICON_STROKE_ACTIVE = 2.25;
+const ICON_SIZE = 22;
+const ICON_STROKE = 1.5;
+const ICON_STROKE_ACTIVE = 2;
 
 export function BottomNav() {
   const pathname = usePathname();
@@ -38,15 +44,23 @@ export function BottomNav() {
             href={href}
             aria-label={label}
             aria-current={isActive ? "page" : undefined}
-            className={`flex min-h-[44px] min-w-[44px] flex-1 items-center justify-center transition hover:bg-border-default ${
+            className={cn(
+              "flex min-h-[44px] min-w-[44px] flex-1 items-center justify-center transition hover:bg-border-default",
               isActive ? "text-today-accent" : "text-text-muted"
-            }`}
+            )}
           >
-            <Icon
-              size={ICON_SIZE}
-              strokeWidth={isActive ? ICON_STROKE_ACTIVE : ICON_STROKE}
-              aria-hidden
-            />
+            <span
+              className={cn(
+                "flex items-center justify-center transition-transform duration-200",
+                isActive && "scale-110"
+              )}
+            >
+              <Icon
+                size={ICON_SIZE}
+                strokeWidth={isActive ? ICON_STROKE_ACTIVE : ICON_STROKE}
+                aria-hidden
+              />
+            </span>
           </Link>
         );
       })}
