@@ -2,8 +2,9 @@
  * Client-side API helpers. Use with getToken from useAuth() so requests are authenticated.
  */
 
-const API_BASE =
-  process.env.NEXT_PUBLIC_API_BASE_URL ?? "http://localhost:8000";
+const API_BASE = (
+  process.env.NEXT_PUBLIC_API_BASE_URL ?? "http://localhost:8000"
+).replace(/\/+$/, "");
 
 export type GetToken = () => Promise<string | null>;
 

@@ -11,7 +11,9 @@ const FEELINGS = ["Calm", "Energized", "Proud", "Grounded", "Clear-headed"];
 
 type CustomHabit = { id: string; name: string; color: string; icon?: string; rhythm?: Record<string, unknown> };
 
-const apiBase = process.env.NEXT_PUBLIC_API_BASE_URL ?? "http://localhost:8000";
+const apiBase = (
+  process.env.NEXT_PUBLIC_API_BASE_URL ?? "http://localhost:8000"
+).replace(/\/+$/, "");
 
 export default function OnboardingContent() {
   const router = useRouter();

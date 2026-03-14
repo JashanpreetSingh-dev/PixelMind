@@ -91,7 +91,7 @@ App runs at **http://localhost:3000**.
 |----------|-------------|
 | `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` | Clerk publishable key |
 | `CLERK_SECRET_KEY` | Clerk secret key |
-| `NEXT_PUBLIC_API_BASE_URL` | Backend base URL (e.g. `http://localhost:8000`) |
+| `NEXT_PUBLIC_API_BASE_URL` | Backend base URL with **no trailing slash** (e.g. `https://your-api.up.railway.app`) |
 
 Configure the same Clerk application for both API and web so JWTs are valid across both.
 
