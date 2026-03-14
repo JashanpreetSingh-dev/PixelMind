@@ -106,7 +106,7 @@ export function TodayView({
   todayIso: initialTodayIso,
   userName,
 }: TodayViewProps) {
-  const { getToken } = useAuth();
+  const { getToken, isLoaded, isSignedIn } = useAuth();
   const queryClient = useQueryClient();
   const router = useRouter();
   const [sheetOpen, setSheetOpen] = useAtom(creationSheetOpenAtom);
@@ -146,6 +146,7 @@ export function TodayView({
     queryKey: ["habits"],
     queryFn: () => fetchHabitsClient(getToken),
     initialData: initialHabits,
+    enabled: isLoaded && !!isSignedIn,
   });
 
   const daysQuery = useQuery({
@@ -154,6 +155,7 @@ export function TodayView({
     // When server sends no days (initialDays=[]), don't seed cache so the query stays loading
     // and we show shimmer until client fetch completes — avoids showing list with cleared completion.
     initialData: initialDays.length > 0 ? initialDays : undefined,
+    enabled: isLoaded && !!isSignedIn,
   });
 
   // Keep cache in sync when server sends new data (e.g. after router.refresh() or navigation)
@@ -176,6 +178,7 @@ export function TodayView({
     queryKey: ["journal-today", todayIso],
     queryFn: () => fetchJournalTodayClient(getToken, todayIso),
     staleTime: 60_000,
+    enabled: isLoaded && !!isSignedIn,
   });
   const isTodaySealed = journalTodayQuery.data !== null && journalTodayQuery.data !== undefined;
 

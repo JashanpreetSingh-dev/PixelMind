@@ -6,7 +6,7 @@ const API_BASE = (
   process.env.NEXT_PUBLIC_API_BASE_URL ?? "http://localhost:8000"
 ).replace(/\/+$/, "");
 
-export type GetToken = () => Promise<string | null>;
+export type GetToken = (options?: { skipCache?: boolean; template?: string }) => Promise<string | null>;
 
 async function authFetch(
   getToken: GetToken,
@@ -15,13 +15,25 @@ async function authFetch(
 ): Promise<Response> {
   const token = await getToken();
   if (!token) throw new Error("Not authenticated");
-  return fetch(input, {
+  const res = await fetch(input, {
     ...init,
     headers: {
       ...(init?.headers ?? {}),
       Authorization: `Bearer ${token}`,
     },
   });
+  if (res.status === 403) {
+    const freshToken = await getToken({ skipCache: true });
+    if (!freshToken) throw new Error("Not authenticated");
+    return fetch(input, {
+      ...init,
+      headers: {
+        ...(init?.headers ?? {}),
+        Authorization: `Bearer ${freshToken}`,
+      },
+    });
+  }
+  return res;
 }
 
 export async function fetchHabitsClient(getToken: GetToken) {

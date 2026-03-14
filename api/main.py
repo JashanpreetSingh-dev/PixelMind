@@ -39,7 +39,12 @@ clerk_jwks_url = os.getenv(
     f"{clerk_frontend_api}/.well-known/jwks.json" if clerk_frontend_api else "",
 )
 
-clerk_config = ClerkConfig(jwks_url=clerk_jwks_url)
+# Relax iat/exp checks to avoid 403 from clock skew; Clerk JWTs are short-lived.
+clerk_config = ClerkConfig(
+    jwks_url=clerk_jwks_url,
+    verify_iat=False,
+    leeway=10.0,
+)
 clerk_auth_guard = ClerkHTTPBearer(config=clerk_config)
 
 

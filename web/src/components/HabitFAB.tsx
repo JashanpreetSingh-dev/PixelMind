@@ -11,13 +11,14 @@ import { fetchHabitsClient } from "@/lib/api-client";
 const MAX_HABITS = 10;
 
 export function HabitFAB() {
-  const { getToken } = useAuth();
+  const { getToken, isLoaded, isSignedIn } = useAuth();
   const pathname = usePathname();
   const setSheetOpen = useSetAtom(creationSheetOpenAtom);
 
   const { data: habits = [] } = useQuery({
     queryKey: ["habits"],
     queryFn: () => fetchHabitsClient(getToken),
+    enabled: isLoaded && !!isSignedIn,
   });
 
   if (pathname !== "/app") return null;

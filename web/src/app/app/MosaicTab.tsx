@@ -89,7 +89,7 @@ const DAY_LABELS = ["Mo", "Tu", "We", "Th", "Fr", "Sa", "Su"];
 const MONTH_ABBREV = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
 
 export function MosaicTab({ habits, todayIso, isTodaySealed }: MosaicTabProps) {
-  const { getToken } = useAuth();
+  const { getToken, isLoaded, isSignedIn } = useAuth();
   const { user } = useUser();
 
   const signupIso = useMemo(() => {
@@ -113,6 +113,7 @@ export function MosaicTab({ habits, todayIso, isTodaySealed }: MosaicTabProps) {
   const daysQuery = useQuery({
     queryKey: ["days-mosaic", start, end],
     queryFn: () => fetchDaysClient(getToken, start, end),
+    enabled: isLoaded && !!isSignedIn,
   });
 
   const daysByDate = useMemo(() => {
