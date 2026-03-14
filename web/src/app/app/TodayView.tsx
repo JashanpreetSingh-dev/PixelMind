@@ -18,6 +18,7 @@ import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } fr
 import { HabitCard } from "./HabitCard";
 import { HabitCreationSheet } from "./HabitCreationSheet";
 import { HabitEditSheet } from "./HabitEditSheet";
+import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { MosaicTab } from "./MosaicTab";
 import { UndoToast } from "@/components/UndoToast";
 import { TonightTab } from "./TonightTab";
@@ -112,6 +113,8 @@ export function TodayView({
   const [sheetOpen, setSheetOpen] = useAtom(creationSheetOpenAtom);
   const [showCelebration, setShowCelebration] = useState(false);
   const [editingHabit, setEditingHabit] = useState<Habit | null>(null);
+  const [actionSheetHabit, setActionSheetHabit] = useState<Habit | null>(null);
+  const [habitPendingDelete, setHabitPendingDelete] = useState<Habit | null>(null);
   const [activeTab, setActiveTab] = useState<ActiveTab>("today");
 
   // Use browser's local "today" so date/time work correctly for the user's timezone
@@ -431,8 +434,7 @@ export function TodayView({
                       streak={computeStreak(habit._id, todayIso, daysByDate)}
                       onToggleComplete={handleToggleComplete}
                       onSkip={handleSkip}
-                      onEdit={handleEdit}
-                      onDelete={handleDelete}
+                      onOpenActions={setActionSheetHabit}
                     />
                   ))}
                 </AnimatePresence>
@@ -447,6 +449,7 @@ export function TodayView({
           habits={habits}
           todayIso={todayIso}
           isTodaySealed={isTodaySealed}
+          onEditHabit={handleEdit}
         />
       )}
 
@@ -511,6 +514,90 @@ export function TodayView({
         onSaved={handleEditSaved}
         onDeleted={handleEditDeleted}
       />
+
+      {/* Habit action sheet (Edit / Skip today / Delete) — mobile-first bottom sheet */}
+      <Sheet
+        open={actionSheetHabit !== null}
+        onOpenChange={(open) => { if (!open) setActionSheetHabit(null); }}
+      >
+        <SheetContent className="p-0">
+          <SheetHeader className="p-4 pb-2">
+            <SheetTitle className="text-base font-medium text-text-muted">
+              {actionSheetHabit?.name ?? "Habit"}
+            </SheetTitle>
+          </SheetHeader>
+          <div className="flex flex-col py-2">
+            <button
+              type="button"
+              className="min-h-[48px] w-full px-4 py-3 text-left text-base text-text-primary hover:bg-white/5 active:bg-white/10"
+              onClick={() => {
+                if (actionSheetHabit) handleEdit(actionSheetHabit);
+                setActionSheetHabit(null);
+              }}
+            >
+              Edit
+            </button>
+            <button
+              type="button"
+              className="min-h-[48px] w-full px-4 py-3 text-left text-base text-text-primary hover:bg-white/5 active:bg-white/10"
+              onClick={() => {
+                if (actionSheetHabit) handleSkip(actionSheetHabit._id);
+                setActionSheetHabit(null);
+              }}
+            >
+              Skip today
+            </button>
+            <button
+              type="button"
+              className="min-h-[48px] w-full px-4 py-3 text-left text-base text-destructive hover:bg-destructive/10 active:bg-destructive/20"
+              onClick={() => {
+                if (actionSheetHabit) {
+                  setHabitPendingDelete(actionSheetHabit);
+                  setActionSheetHabit(null);
+                }
+              }}
+            >
+              Delete
+            </button>
+          </div>
+        </SheetContent>
+      </Sheet>
+
+      {/* Delete confirmation sheet */}
+      <Sheet
+        open={habitPendingDelete !== null}
+        onOpenChange={(open) => { if (!open) setHabitPendingDelete(null); }}
+      >
+        <SheetContent className="flex flex-col gap-4">
+          <SheetHeader>
+            <SheetTitle>Remove habit?</SheetTitle>
+          </SheetHeader>
+          <p className="text-sm text-text-muted">
+            This will remove {habitPendingDelete?.name ?? "this habit"} from your tracker.
+          </p>
+          <div className="mt-auto flex flex-col gap-2">
+            <Button
+              variant="destructive"
+              className="min-h-[44px] w-full"
+              onClick={async () => {
+                if (habitPendingDelete) {
+                  await handleDelete(habitPendingDelete);
+                  setHabitPendingDelete(null);
+                }
+              }}
+            >
+              Remove
+            </Button>
+            <Button
+              variant="ghost"
+              className="min-h-[44px] w-full"
+              onClick={() => setHabitPendingDelete(null)}
+            >
+              Cancel
+            </Button>
+          </div>
+        </SheetContent>
+      </Sheet>
     </section>
   );
 }

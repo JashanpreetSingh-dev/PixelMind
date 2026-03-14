@@ -15,6 +15,7 @@ type MosaicTabProps = {
   habits: Habit[];
   todayIso: string;
   isTodaySealed: boolean;
+  onEditHabit?: (habit: Habit) => void;
 };
 
 const GRID_WEEKS = 26; // show 26 weeks at once (7 rows × 26 columns)
@@ -88,7 +89,7 @@ function computeStreak(
 const DAY_LABELS = ["Mo", "Tu", "We", "Th", "Fr", "Sa", "Su"];
 const MONTH_ABBREV = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
 
-export function MosaicTab({ habits, todayIso, isTodaySealed }: MosaicTabProps) {
+export function MosaicTab({ habits, todayIso, isTodaySealed, onEditHabit }: MosaicTabProps) {
   const { getToken, isLoaded, isSignedIn } = useAuth();
   const { user } = useUser();
 
@@ -166,18 +167,36 @@ export function MosaicTab({ habits, todayIso, isTodaySealed }: MosaicTabProps) {
               borderColor: `${habitColor}28`,
             }}
           >
-            {/* Header — icon + title + streak (same for every habit card) */}
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2 min-w-0">
-                <span className="text-lg leading-none shrink-0">{habit.icon ?? "⭐"}</span>
-                <span className="text-sm font-semibold text-white truncate uppercase tracking-wide">
-                  {habit.name}
-                </span>
+            {/* Header — tappable to open edit sheet (min 44px for mobile) */}
+            {onEditHabit ? (
+              <button
+                type="button"
+                className="flex min-h-[44px] w-full cursor-pointer items-center justify-between rounded-lg text-left transition-colors active:bg-white/10 focus:outline-none focus:ring-2 focus:ring-white/20"
+                onClick={() => onEditHabit(habit)}
+              >
+                <div className="flex min-h-[44px] items-center gap-2 min-w-0">
+                  <span className="text-lg leading-none shrink-0">{habit.icon ?? "⭐"}</span>
+                  <span className="text-sm font-semibold text-white truncate uppercase tracking-wide">
+                    {habit.name}
+                  </span>
+                </div>
+                {streak > 0 && (
+                  <span className="text-xs text-text-muted shrink-0 ml-2">🔥 {streak}</span>
+                )}
+              </button>
+            ) : (
+              <div className="flex min-h-[44px] items-center justify-between">
+                <div className="flex items-center gap-2 min-w-0">
+                  <span className="text-lg leading-none shrink-0">{habit.icon ?? "⭐"}</span>
+                  <span className="text-sm font-semibold text-white truncate uppercase tracking-wide">
+                    {habit.name}
+                  </span>
+                </div>
+                {streak > 0 && (
+                  <span className="text-xs text-text-muted shrink-0 ml-2">🔥 {streak}</span>
+                )}
               </div>
-              {streak > 0 && (
-                <span className="text-xs text-text-muted shrink-0 ml-2">🔥 {streak}</span>
-              )}
-            </div>
+            )}
 
             {/* Mosaic grid — solid-block aesthetic: no grid lines, contiguous squares */}
             <div

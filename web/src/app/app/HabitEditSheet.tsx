@@ -1,7 +1,7 @@
 "use client";
 
 import { useAuth } from "@clerk/nextjs";
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
@@ -53,7 +53,7 @@ export function HabitEditSheet({
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // Re-sync when habit changes (sheet reopened for a different habit)
+  // Re-sync when habit changes or sheet opens (so form is always filled with current habit)
   const syncToHabit = useCallback(() => {
     if (!habit) return;
     const r = parseRhythm(habit.rhythm);
@@ -66,6 +66,10 @@ export function HabitEditSheet({
     setError(null);
     setConfirmDelete(false);
   }, [habit]);
+
+  useEffect(() => {
+    if (open && habit) syncToHabit();
+  }, [open, habit, syncToHabit]);
 
   const handleOpenChange = useCallback(
     (next: boolean) => {

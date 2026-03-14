@@ -1,9 +1,8 @@
 "use client";
 
 import { motion, AnimatePresence } from "framer-motion";
-import { useCallback, useRef, useState } from "react";
+import { useCallback, useRef } from "react";
 import { HABIT_PALETTE } from "@/lib/theme";
-import { cn } from "@/lib/utils";
 
 type Habit = { _id: string; name: string; color?: string; icon?: string };
 
@@ -13,11 +12,11 @@ type HabitCardProps = {
   streak: number;
   onToggleComplete: (habitId: string) => void;
   onSkip: (habitId: string) => void;
-  onEdit: (habit: Habit) => void;
-  onDelete: (habit: Habit) => void;
+  onOpenActions: (habit: Habit) => void;
 };
 
 const LONG_PRESS_MS = 500;
+const MIN_TOUCH_TARGET_PX = 44;
 
 export function HabitCard({
   habit,
@@ -25,10 +24,8 @@ export function HabitCard({
   streak,
   onToggleComplete,
   onSkip,
-  onEdit,
-  onDelete,
+  onOpenActions,
 }: HabitCardProps) {
-  const [menuOpen, setMenuOpen] = useState(false);
   const longPressTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const didLongPress = useRef(false);
   const touchStartX = useRef(0);
@@ -48,10 +45,10 @@ export function HabitCard({
       longPressTimer.current = setTimeout(() => {
         longPressTimer.current = null;
         didLongPress.current = true;
-        setMenuOpen(true);
+        onOpenActions(habit);
       }, LONG_PRESS_MS);
     },
-    [clearLongPress]
+    [clearLongPress, habit, onOpenActions]
   );
 
   const handlePointerUp = useCallback(() => {
@@ -68,11 +65,19 @@ export function HabitCard({
         didLongPress.current = false;
         return;
       }
-      if (menuOpen) return;
       e.preventDefault();
       onToggleComplete(habit._id);
     },
-    [habit._id, menuOpen, onToggleComplete]
+    [habit._id, onToggleComplete]
+  );
+
+  const handleMenuClick = useCallback(
+    (e: React.MouseEvent) => {
+      e.stopPropagation();
+      e.preventDefault();
+      onOpenActions(habit);
+    },
+    [habit, onOpenActions]
   );
 
   const handleTouchStart = useCallback((e: React.TouchEvent) => {
@@ -126,6 +131,15 @@ export function HabitCard({
               {streak > 0 ? `Day ${streak} streak` : "Start your streak"}
             </p>
           </div>
+          <button
+            type="button"
+            className="flex shrink-0 items-center justify-center rounded-full text-text-muted hover:text-text-primary focus:outline-none focus:ring-2 focus:ring-white/30"
+            style={{ minWidth: MIN_TOUCH_TARGET_PX, minHeight: MIN_TOUCH_TARGET_PX }}
+            onClick={handleMenuClick}
+            aria-label="Habit options"
+          >
+            <span className="text-lg leading-none" aria-hidden>⋮</span>
+          </button>
           <div
             className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full border-2 transition-colors"
             style={{
@@ -150,54 +164,6 @@ export function HabitCard({
             </AnimatePresence>
           </div>
         </div>
-
-        {menuOpen && (
-          <>
-            <div
-              className="fixed inset-0 z-40"
-              aria-hidden
-              onClick={() => setMenuOpen(false)}
-            />
-            <div
-              className="absolute right-2 top-12 z-50 min-w-[140px] rounded-lg border border-today-card-border bg-today-card-bg py-1 shadow-lg"
-              role="menu"
-            >
-              <button
-                type="button"
-                className="w-full px-3 py-2 text-left text-sm text-text-primary hover:bg-border-default"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  setMenuOpen(false);
-                  onEdit(habit);
-                }}
-              >
-                Edit
-              </button>
-              <button
-                type="button"
-                className="w-full px-3 py-2 text-left text-sm text-text-primary hover:bg-border-default"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  setMenuOpen(false);
-                  onSkip(habit._id);
-                }}
-              >
-                Skip today
-              </button>
-              <button
-                type="button"
-                className="w-full px-3 py-2 text-left text-sm text-destructive hover:bg-border-default"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  setMenuOpen(false);
-                  onDelete(habit);
-                }}
-              >
-                Delete
-              </button>
-            </div>
-          </>
-        )}
       </div>
     </motion.div>
   );
