@@ -19,12 +19,18 @@ app = FastAPI(title="PixelMind API", version="0.1.0")
 _cors_origins = os.getenv("CORS_ORIGINS", "http://localhost:3000").strip()
 cors_origins = [o.strip() for o in _cors_origins.split(",") if o.strip()]
 
+# Allow Railway app origins (e.g. https://pixelmind-production.up.railway.app)
+# so CORS works even if CORS_ORIGINS env is missing or misconfigured in production.
+allow_origin_regex = r"https://[a-z0-9-]+\.up\.railway\.app"
+
 app.add_middleware(
     CORSMiddleware,
     allow_origins=cors_origins,
+    allow_origin_regex=allow_origin_regex,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
+    expose_headers=["*"],
 )
 
 clerk_frontend_api = os.getenv("CLERK_FRONTEND_API", "").rstrip("/")
