@@ -1,0 +1,52 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(cd C:/Users/jasha/Desktop/PixelG && openspec new change \"habit-onboarding-revamp\" 2>&1)",
+      "Bash(cd C:/Users/jasha/Desktop/PixelG && openspec instructions proposal --change \"habit-onboarding-revamp\" --json 2>&1)",
+      "Bash(cd C:/Users/jasha/Desktop/PixelG && openspec instructions design --change \"habit-onboarding-revamp\" --json 2>&1)",
+      "Bash(cd C:/Users/jasha/Desktop/PixelG && openspec instructions specs --change \"habit-onboarding-revamp\" --json 2>&1)",
+      "Bash(cd C:/Users/jasha/Desktop/PixelG && openspec status --change \"habit-onboarding-revamp\" --json 2>&1)",
+      "Bash(cd C:/Users/jasha/Desktop/PixelG && openspec instructions tasks --change \"habit-onboarding-revamp\" --json 2>&1)",
+      "Bash(cd C:/Users/jasha/Desktop/PixelG && openspec status --change \"habit-onboarding-revamp\" 2>&1)",
+      "Bash(cd C:/Users/jasha/Desktop/PixelG && openspec instructions apply --change \"habit-onboarding-revamp\" --json 2>&1)",
+      "Bash(cd C:/Users/jasha/Desktop/PixelG && openspec sync-specs --change \"habit-onboarding-revamp\" 2>&1)",
+      "Bash(cd C:/Users/jasha/Desktop/PixelG && openspec --help 2>&1)",
+      "Bash(cd C:/Users/jasha/Desktop/PixelG && openspec archive --help 2>&1)",
+      "Bash(cd C:/Users/jasha/Desktop/PixelG && openspec archive habit-onboarding-revamp -y 2>&1)",
+      "Bash(cd C:/Users/jasha/Desktop/PixelG && openspec new change \"home-tabbed-layout\" 2>&1)",
+      "Bash(cd C:/Users/jasha/Desktop/PixelG && openspec instructions proposal --change \"home-tabbed-layout\" --json 2>&1)",
+      "Bash(cd C:/Users/jasha/Desktop/PixelG && openspec list --specs --json 2>&1)",
+      "Bash(cd C:/Users/jasha/Desktop/PixelG && openspec instructions design --change \"home-tabbed-layout\" --json 2>&1 && openspec instructions specs --change \"home-tabbed-layout\" --json 2>&1)",
+      "Bash(cd C:/Users/jasha/Desktop/PixelG && openspec status --change \"home-tabbed-layout\" --json 2>&1)",
+      "Bash(cd C:/Users/jasha/Desktop/PixelG && openspec status --change \"home-tabbed-layout\" 2>&1)",
+      "Bash(cd C:/Users/jasha/Desktop/PixelG && openspec instructions apply --change \"home-tabbed-layout\" --json 2>&1)",
+      "Bash(openspec status:*)",
+      "Bash(openspec list:*)",
+      "Bash(cd \"C:/Users/jasha/Desktop/PixelG\" && openspec new change \"habit-visual-identity\")",
+      "Bash(cd \"C:/Users/jasha/Desktop/PixelG\" && openspec instructions proposal --change \"habit-visual-identity\" --json)",
+      "Bash(cd \"C:/Users/jasha/Desktop/PixelG\" && openspec instructions design --change \"habit-visual-identity\" --json)",
+      "Bash(cd \"C:/Users/jasha/Desktop/PixelG\" && openspec instructions specs --change \"habit-visual-identity\" --json)",
+      "Bash(cd \"C:/Users/jasha/Desktop/PixelG\" && openspec instructions tasks --change \"habit-visual-identity\" --json)",
+      "Bash(cd \"C:/Users/jasha/Desktop/PixelG\" && openspec instructions apply --change \"habit-visual-identity\" --json)",
+      "Bash(cd \"C:/Users/jasha/Desktop/PixelG\" && openspec new change \"mobile-nav-icons-fab\")",
+      "Bash(cd \"C:/Users/jasha/Desktop/PixelG\" && openspec instructions proposal --change \"mobile-nav-icons-fab\" --json)",
+      "Bash(cd \"C:/Users/jasha/Desktop/PixelG\" && openspec instructions design --change \"mobile-nav-icons-fab\" --json && openspec instructions specs --change \"mobile-nav-icons-fab\" --json)",
+      "Bash(cd \"C:/Users/jasha/Desktop/PixelG\" && openspec instructions tasks --change \"mobile-nav-icons-fab\" --json)",
+      "Bash(openspec instructions:*)",
+      "Bash(cd /c/Users/jasha/Desktop/PixelG/web && npm install lucide-react 2>&1 | tail -5)",
+      "Bash(find /c/Users/jasha/Desktop/PixelG/web/node_modules -name \"draggable*\" 2>/dev/null | grep -v \".map\" | head -10)",
+      "Bash(node -e \"const p=require\\('/c/Users/jasha/Desktop/PixelG/web/node_modules/next/package.json'\\); console.log\\(p.version\\)\")",
+      "Bash(npm install:*)",
+      "Bash(openspec new:*)",
+      "Bash(cd /c/Users/jasha/Desktop/PixelG/web && npx tsc --noEmit 2>&1 | head -30)",
+      "Bash(grep -rn \"upsertDay\\\\|POST.*days\\\\|days.*POST\" /c/Users/jasha/Desktop/PixelG/api/src --include=\"*.ts\" -l 2>/dev/null | head -5)",
+      "Bash(find /c/Users/jasha/Desktop/PixelG -name \"*.ts\" -not -path \"*/node_modules/*\" | xargs grep -l \"completed_habit_ids\" 2>/dev/null | head -10)",
+      "Bash(find /c/Users/jasha/Desktop/PixelG -name \"*.py\" -not -path \"*/node_modules/*\" | xargs grep -l \"completed_habit_ids\\\\|days\" 2>/dev/null | head -10)",
+      "Bash(npx tsc:*)"
+    ]
+  },
+  "enabledPlugins": {
+    "frontend-design@claude-plugins-official": true,
+    "superpowers@claude-plugins-official": true
+  }
+}

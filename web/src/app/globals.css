@@ -1,0 +1,76 @@
+@import "tailwindcss";
+
+/* Research-backed palette: calm greens/blues, muted accents — same dark theme, slightly lighter */
+:root {
+  color-scheme: dark;
+  --bg-app: #161c24;
+  --bg-surface: #1e262f;
+  --border-default: #2f3a47;
+  --text-primary: #eef2f6;
+  --text-muted: #8b9cad;
+  --text-faint: #5c6b7a;
+  --accent: #4db6ac;
+  --accent-hover: #3da89e;
+  --destructive: #e57373;
+  /* Habit palette — cool-dominant, soft warms (calm productivity) */
+  --habit-1: #7ee8a6;
+  --habit-2: #7dd3fc;
+  --habit-3: #b8a9e8;
+  --habit-4: #f5c88a;
+  --habit-5: #e9a3c0;
+  --habit-6: #8de9dc;
+  --habit-7: #f5d76e;
+  --habit-8: #b8c5d4;
+  /* Today / completion — green = success, soft and readable */
+  --today-bg: #13171d;
+  --today-card-bg: #1a2129;
+  --today-card-border: #2a3544;
+  --today-accent: #2da67a;
+  --today-completed-border: #0e5238;
+  --today-completed-bg: #0d1f18;
+  /* Legacy / compatibility */
+  --background: var(--bg-app);
+  --foreground: var(--text-primary);
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-bg-app: var(--bg-app);
+  --color-bg-surface: var(--bg-surface);
+  --color-border-default: var(--border-default);
+  --color-text-primary: var(--text-primary);
+  --color-text-muted: var(--text-muted);
+  --color-text-faint: var(--text-faint);
+  --color-accent: var(--accent);
+  --color-accent-hover: var(--accent-hover);
+  --color-destructive: var(--destructive);
+  --color-habit-1: var(--habit-1);
+  --color-habit-2: var(--habit-2);
+  --color-habit-3: var(--habit-3);
+  --color-habit-4: var(--habit-4);
+  --color-habit-5: var(--habit-5);
+  --color-habit-6: var(--habit-6);
+  --color-habit-7: var(--habit-7);
+  --color-habit-8: var(--habit-8);
+  --color-today-bg: var(--today-bg);
+  --color-today-card-bg: var(--today-card-bg);
+  --color-today-card-border: var(--today-card-border);
+  --color-today-accent: var(--today-accent);
+  --color-today-completed-border: var(--today-completed-border);
+  --color-today-completed-bg: var(--today-completed-bg);
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+}
+
+body {
+  background: var(--bg-app);
+  color: var(--text-primary);
+  font-family: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
+  line-height: 1.6;
+}
+
+@keyframes shimmer {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(100%); }
+}
