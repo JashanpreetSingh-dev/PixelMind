@@ -22,6 +22,23 @@ export const metadata: Metadata = {
     "PixelMind – pixel habit tracking, night journaling, and AI memory in one place.",
   manifest: "/manifest.webmanifest",
   themeColor: "#161c24",
+  icons: {
+    icon: "/icon-192.png",
+    apple: "/icon-192.png",
+  },
+  openGraph: {
+    title: "PixelMind",
+    description:
+      "PixelMind – pixel habit tracking, night journaling, and AI memory in one place.",
+    images: ["/og-image.png", "/icon-512.png"],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "PixelMind",
+    description:
+      "PixelMind – pixel habit tracking, night journaling, and AI memory in one place.",
+    images: ["/og-image.png", "/icon-512.png"],
+  },
   appleWebApp: {
     capable: true,
     statusBarStyle: "default",
