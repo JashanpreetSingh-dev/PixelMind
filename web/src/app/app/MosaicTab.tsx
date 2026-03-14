@@ -2,10 +2,10 @@
 
 import { useAuth, useUser } from "@clerk/nextjs";
 import { useQuery } from "@tanstack/react-query";
-import { useEffect, useMemo, useState } from "react";
+import { useMemo } from "react";
 import { Fragment } from "react";
 import type { CSSProperties } from "react";
-import { fetchDaysClient, fetchJournalTodayClient } from "@/lib/api-client";
+import { fetchDaysClient } from "@/lib/api-client";
 import { isoToLocalDate, localDateToIso } from "@/lib/date";
 
 type Habit = { _id: string; name: string; color?: string; icon?: string };
@@ -14,6 +14,7 @@ type DayDoc = { date: string; completed_habit_ids?: string[] };
 type MosaicTabProps = {
   habits: Habit[];
   todayIso: string;
+  isTodaySealed: boolean;
 };
 
 const GRID_WEEKS = 26; // show 26 weeks at once (7 rows × 26 columns)
@@ -87,18 +88,9 @@ function computeStreak(
 const DAY_LABELS = ["Mo", "Tu", "We", "Th", "Fr", "Sa", "Su"];
 const MONTH_ABBREV = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
 
-export function MosaicTab({ habits, todayIso }: MosaicTabProps) {
+export function MosaicTab({ habits, todayIso, isTodaySealed }: MosaicTabProps) {
   const { getToken } = useAuth();
   const { user } = useUser();
-  const [isTodaySealed, setIsTodaySealed] = useState(false);
-
-  useEffect(() => {
-    let cancelled = false;
-    fetchJournalTodayClient(getToken, todayIso)
-      .then((entry) => { if (!cancelled) setIsTodaySealed(entry !== null); })
-      .catch(() => {});
-    return () => { cancelled = true; };
-  }, [getToken, todayIso]);
 
   const signupIso = useMemo(() => {
     if (!user?.createdAt) return null;

@@ -151,7 +151,9 @@ export function TodayView({
   const daysQuery = useQuery({
     queryKey: ["days", start, end],
     queryFn: () => fetchDaysClient(getToken, start, end),
-    initialData: initialDays,
+    // When server sends no days (initialDays=[]), don't seed cache so the query stays loading
+    // and we show shimmer until client fetch completes — avoids showing list with cleared completion.
+    initialData: initialDays.length > 0 ? initialDays : undefined,
   });
 
   // Keep cache in sync when server sends new data (e.g. after router.refresh() or navigation)
@@ -169,7 +171,13 @@ export function TodayView({
   }, [queryClient, router]);
 
   const [pendingUndo, setPendingUndo] = useState<{ habitId: string; previousIds: string[] } | null>(null);
-  const [isTodaySealed, setIsTodaySealed] = useState(false);
+
+  const journalTodayQuery = useQuery({
+    queryKey: ["journal-today", todayIso],
+    queryFn: () => fetchJournalTodayClient(getToken, todayIso),
+    staleTime: 60_000,
+  });
+  const isTodaySealed = journalTodayQuery.data !== null && journalTodayQuery.data !== undefined;
 
   const habits: Habit[] = habitsQuery.data ?? [];
   const days: DayDoc[] = daysQuery.data ?? [];
@@ -291,17 +299,6 @@ export function TodayView({
     queryClient.invalidateQueries({ queryKey: ["days-mosaic"] });
   }, [queryClient, start, end]);
 
-  // Check if today is already sealed (for tonight tab indicator and mosaic glow)
-  useEffect(() => {
-    let cancelled = false;
-    fetchJournalTodayClient(getToken, todayIso)
-      .then((entry) => {
-        if (!cancelled) setIsTodaySealed(entry !== null);
-      })
-      .catch(() => {});
-    return () => { cancelled = true; };
-  }, [getToken, todayIso]);
-
   const greeting = getGreeting();
   const isReflectionUnlocked = new Date().getHours() >= 20;
   const atCapacity = habits.length >= MAX_HABITS;
@@ -402,11 +399,13 @@ export function TodayView({
       {/* Tab content */}
       {activeTab === "today" && (
         <>
-          {habits.length === 0 ? (
+          {/* daysQuery.dataUpdatedAt === 0 means no successful server fetch yet (initialData=[] always).
+              Show shimmer until we have real data — covers the gap while Clerk initializes and retries. */}
+          {habits.length === 0 || daysQuery.dataUpdatedAt === 0 ? (
             <div className="space-y-2">
-              {[1, 2, 3].map((i) => (
+              {(habits.length > 0 ? habits : [1, 2, 3]).map((h) => (
                 <div
-                  key={i}
+                  key={typeof h === "number" ? h : h._id}
                   className="rounded-[14px] border border-today-card-border bg-today-card-bg min-h-[52px] overflow-hidden relative"
                 >
                   <div
@@ -444,6 +443,7 @@ export function TodayView({
         <MosaicTab
           habits={habits}
           todayIso={todayIso}
+          isTodaySealed={isTodaySealed}
         />
       )}
 
@@ -452,7 +452,7 @@ export function TodayView({
           isUnlocked={isReflectionUnlocked}
           todayIso={todayIso}
           onSealComplete={() => {
-            setIsTodaySealed(true);
+            queryClient.invalidateQueries({ queryKey: ["journal-today", todayIso] });
             setActiveTab("today");
           }}
         />
