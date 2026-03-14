@@ -3,9 +3,10 @@
 import { useAuth, useUser } from "@clerk/nextjs";
 import { useQuery } from "@tanstack/react-query";
 import { useMemo } from "react";
-import { fetchDaysClient } from "@/lib/api-client";
 import { Fragment } from "react";
 import type { CSSProperties } from "react";
+import { fetchDaysClient } from "@/lib/api-client";
+import { isoToLocalDate, localDateToIso } from "@/lib/date";
 
 type Habit = { _id: string; name: string; color?: string; icon?: string };
 type DayDoc = { date: string; completed_habit_ids?: string[] };
@@ -23,17 +24,16 @@ const GRID_WEEKS = 26; // show 26 weeks at once (7 rows × 26 columns)
  *  - Day labels (Mo–Su) on the left; month labels along the bottom
  */
 
-// Returns exactly GRID_WEEKS calendar weeks (Mon–Sun). When signupIso is set, starts
-// from the week containing signup (day one); otherwise last 26 weeks.
+// Returns exactly GRID_WEEKS calendar weeks (Mon–Sun) in browser local timezone.
 function getCalendarWeeks(todayIso: string, signupIso: string | null): string[][] {
-  const today = new Date(todayIso + "T12:00:00");
+  const today = isoToLocalDate(todayIso);
   const dayOfWeek = (today.getDay() + 6) % 7; // 0 = Mon, 6 = Sun
   const currentMonday = new Date(today);
   currentMonday.setDate(today.getDate() - dayOfWeek);
 
   let startMonday: Date;
   if (signupIso) {
-    const signup = new Date(signupIso + "T12:00:00");
+    const signup = isoToLocalDate(signupIso);
     const signupMonday = new Date(signup);
     const signupDayOfWeek = (signup.getDay() + 6) % 7;
     signupMonday.setDate(signup.getDate() - signupDayOfWeek);
@@ -57,7 +57,7 @@ function getCalendarWeeks(todayIso: string, signupIso: string | null): string[][
     for (let d = 0; d < 7; d++) {
       const date = new Date(startMonday);
       date.setDate(startMonday.getDate() + w * 7 + d);
-      week.push(date.toISOString().slice(0, 10));
+      week.push(localDateToIso(date));
     }
     weeks.push(week);
   }
@@ -70,13 +70,13 @@ function computeStreak(
   daysByDate: Record<string, DayDoc>
 ): number {
   let count = 0;
-  const d = new Date(todayIso + "T12:00:00");
+  let cur = isoToLocalDate(todayIso);
   for (let i = 0; i < 365; i++) {
-    const iso = d.toISOString().slice(0, 10);
+    const iso = localDateToIso(cur);
     const day = daysByDate[iso];
     if (day?.completed_habit_ids?.includes(habitId)) {
       count++;
-      d.setDate(d.getDate() - 1);
+      cur.setDate(cur.getDate() - 1);
     } else {
       break;
     }
@@ -93,10 +93,7 @@ export function MosaicTab({ habits, todayIso }: MosaicTabProps) {
 
   const signupIso = useMemo(() => {
     if (!user?.createdAt) return null;
-    const d = new Date(user.createdAt);
-    return new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()))
-      .toISOString()
-      .slice(0, 10);
+    return localDateToIso(new Date(user.createdAt));
   }, [user?.createdAt]);
 
   const weeks = useMemo(
@@ -247,9 +244,9 @@ export function MosaicTab({ habits, todayIso }: MosaicTabProps) {
               {/* Month labels row */}
               <span style={{ gridRow: 8, gridColumn: 1 }} />
               {weeks.map((week, weekIndex) => {
-                const monday = new Date(week[0] + "T12:00:00");
+                const monday = isoToLocalDate(week[0]);
                 const isFirstWeekOfMonth =
-                  weekIndex === 0 || new Date(weeks[weekIndex - 1][0] + "T12:00:00").getMonth() !== monday.getMonth();
+                  weekIndex === 0 || isoToLocalDate(weeks[weekIndex - 1][0]).getMonth() !== monday.getMonth();
                 const label = isFirstWeekOfMonth ? MONTH_ABBREV[monday.getMonth()].toUpperCase() : "";
                 return (
                   <span

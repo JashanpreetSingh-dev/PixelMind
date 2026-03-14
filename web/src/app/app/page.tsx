@@ -1,14 +1,6 @@
 import { redirect } from "next/navigation";
-import { fetchDays, fetchHabits, fetchMe } from "@/lib/api";
+import { fetchHabits, fetchMe } from "@/lib/api";
 import { TodayView } from "./TodayView";
-
-function getLast30DaysRange(): { start: string; end: string } {
-  const end = new Date();
-  const start = new Date(end);
-  start.setDate(start.getDate() - 29);
-  const toIso = (d: Date) => d.toISOString().slice(0, 10);
-  return { start: toIso(start), end: toIso(end) };
-}
 
 export default async function AppHomePage() {
   let shouldOnboard = false;
@@ -22,24 +14,22 @@ export default async function AppHomePage() {
   }
   if (shouldOnboard) redirect("/app/onboarding");
 
-  const { start, end } = getLast30DaysRange();
-  const todayIso = new Date().toISOString().slice(0, 10);
+  // Server doesn't know the user's timezone. Pass placeholder for first paint;
+  // TodayView syncs to browser's local date on mount and fetches days with client range.
+  const todayIsoPlaceholder = new Date().toISOString().slice(0, 10);
 
   let habits: Array<{ _id: string; name: string; color?: string; icon?: string; rhythm?: unknown }> = [];
-  let days: Array<{ date: string; completed_habit_ids?: string[] }> = [];
-
   try {
     habits = await fetchHabits();
-    days = await fetchDays(start, end);
   } catch {
-    // If the API fails here, render with empty data; client can refetch.
+    // Client will refetch.
   }
 
   return (
     <TodayView
       initialHabits={habits}
-      initialDays={days}
-      todayIso={todayIso}
+      initialDays={[]}
+      todayIso={todayIsoPlaceholder}
       userName={null}
     />
   );

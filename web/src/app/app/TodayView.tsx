@@ -13,32 +13,35 @@ import {
 import { Button } from "@/components/ui/button";
 import { useAtom } from "jotai";
 import { creationSheetOpenAtom } from "@/lib/atoms";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { HabitCard } from "./HabitCard";
 import { HabitCreationSheet } from "./HabitCreationSheet";
 import { HabitEditSheet } from "./HabitEditSheet";
 import { MosaicTab } from "./MosaicTab";
 import { UndoToast } from "@/components/UndoToast";
 import { TonightTab } from "./TonightTab";
+import { getTodayIso as getTodayIsoLib, localDateToIso } from "@/lib/date";
 import { cn } from "@/lib/utils";
 
 const MAX_HABITS = 10;
 type ActiveTab = "today" | "mosaic" | "tonight";
 
+/** Last 30 days in the browser's local timezone (calendar dates). */
 function getLast30DaysRange(): { start: string; end: string; dates: string[] } {
   const now = new Date();
-  const end = new Date(Date.UTC(now.getFullYear(), now.getMonth(), now.getDate()));
-  const start = new Date(end);
-  start.setUTCDate(start.getUTCDate() - 29);
+  const y = now.getFullYear();
+  const m = now.getMonth();
+  const d = now.getDate();
+  const end = new Date(y, m, d);
+  const start = new Date(y, m, d - 29);
   const dates: string[] = [];
   for (let i = 0; i < 30; i++) {
-    const d = new Date(start);
-    d.setUTCDate(start.getUTCDate() + i);
-    dates.push(d.toISOString().slice(0, 10));
+    const day = new Date(y, m, d - 29 + i);
+    dates.push(localDateToIso(day));
   }
   return {
-    start: start.toISOString().slice(0, 10),
-    end: end.toISOString().slice(0, 10),
+    start: localDateToIso(start),
+    end: localDateToIso(end),
     dates,
   };
 }
@@ -56,13 +59,14 @@ function computeStreak(
   daysByDate: Record<string, { completed_habit_ids?: string[] }>
 ): number {
   let count = 0;
-  let d = new Date(todayIso + "T12:00:00");
+  const [y, m, day] = todayIso.split("-").map(Number);
+  let cur = new Date(y, m - 1, day);
   for (let i = 0; i < 365; i++) {
-    const iso = d.toISOString().slice(0, 10);
-    const day = daysByDate[iso];
-    if (day?.completed_habit_ids?.includes(habitId)) {
+    const iso = localDateToIso(cur);
+    const dayDoc = daysByDate[iso];
+    if (dayDoc?.completed_habit_ids?.includes(habitId)) {
       count++;
-      d.setDate(d.getDate() - 1);
+      cur.setDate(cur.getDate() - 1);
     } else {
       break;
     }
@@ -81,13 +85,24 @@ type TodayViewProps = {
 };
 
 function getTodayIso(): string {
-  return new Date().toISOString().slice(0, 10);
+  return getTodayIsoLib();
+}
+
+/** Format YYYY-MM-DD as a readable date in the browser's locale. */
+function formatLocalDate(iso: string): string {
+  const [y, m, d] = iso.split("-").map(Number);
+  const date = new Date(y, m - 1, d);
+  return date.toLocaleDateString(undefined, {
+    weekday: "long",
+    month: "short",
+    day: "numeric",
+  });
 }
 
 export function TodayView({
   initialHabits,
   initialDays,
-  todayIso,
+  todayIso: initialTodayIso,
   userName,
 }: TodayViewProps) {
   const { getToken } = useAuth();
@@ -97,6 +112,12 @@ export function TodayView({
   const [showCelebration, setShowCelebration] = useState(false);
   const [editingHabit, setEditingHabit] = useState<Habit | null>(null);
   const [activeTab, setActiveTab] = useState<ActiveTab>("today");
+
+  // Use browser's local "today" so date/time work correctly for the user's timezone
+  const [todayIso, setTodayIso] = useState(initialTodayIso);
+  useLayoutEffect(() => {
+    setTodayIso(getTodayIso());
+  }, []);
 
   const { start, end, dates } = useMemo(() => getLast30DaysRange(), []);
 
@@ -135,7 +156,9 @@ export function TodayView({
   // Keep cache in sync when server sends new data (e.g. after router.refresh() or navigation)
   useEffect(() => {
     queryClient.setQueryData(["habits"], initialHabits);
-    queryClient.setQueryData(["days", start, end], initialDays);
+    if (initialDays.length > 0) {
+      queryClient.setQueryData(["days", start, end], initialDays);
+    }
   }, [initialHabits, initialDays, queryClient, start, end]);
 
   const isRefetching = habitsQuery.isRefetching || daysQuery.isRefetching;
@@ -301,11 +324,7 @@ export function TodayView({
       <header className="flex items-start justify-between gap-2">
         <div className="space-y-0.5">
           <p className="text-xs text-text-faint" suppressHydrationWarning>
-            {new Date(todayIso + "T12:00:00").toLocaleDateString("en-US", {
-              weekday: "long",
-              month: "short",
-              day: "numeric",
-            })}
+            {formatLocalDate(todayIso)}
           </p>
           <h1 className="text-2xl font-medium tracking-tight text-text-primary" suppressHydrationWarning>
             {userName ? `${greeting}, ${userName}` : greeting}
