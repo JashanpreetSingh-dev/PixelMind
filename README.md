@@ -83,6 +83,7 @@ App runs at **http://localhost:3000**.
 | `MONGODB_URI` | MongoDB connection string |
 | `CLERK_FRONTEND_API` | Clerk Frontend API URL (e.g. `https://your-app.clerk.accounts.dev`) |
 | `CLERK_JWKS_URL` | Optional; defaults to `{CLERK_FRONTEND_API}/.well-known/jwks.json` |
+| `CORS_ORIGINS` | Comma-separated allowed origins (e.g. `http://localhost:3000,https://yourapp.vercel.app`) |
 
 ### Web (`web/.env.local`)
 
@@ -90,7 +91,7 @@ App runs at **http://localhost:3000**.
 |----------|-------------|
 | `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` | Clerk publishable key |
 | `CLERK_SECRET_KEY` | Clerk secret key |
-| `NEXT_PUBLIC_API_URL` | Backend base URL (e.g. `http://localhost:8000`) |
+| `NEXT_PUBLIC_API_BASE_URL` | Backend base URL (e.g. `http://localhost:8000`) |
 
 Configure the same Clerk application for both API and web so JWTs are valid across both.
 
@@ -107,6 +108,42 @@ Configure the same Clerk application for both API and web so JWTs are valid acro
 
 - `uvicorn main:app --reload` — development
 - `uvicorn main:app --host 0.0.0.0 --port 8000` — production-style
+
+## Deploying to Vercel
+
+The **web app** (Next.js) deploys to Vercel. The **API** (FastAPI) must be hosted elsewhere (e.g. [Railway](https://railway.app), [Render](https://render.com), [Fly.io](https://fly.io)) — set `NEXT_PUBLIC_API_BASE_URL` to that API URL.
+
+### 1. Deploy the API first
+
+Host the `api/` app on your chosen platform and note the public URL (e.g. `https://pixelmind-api.up.railway.app`). Set env vars there: `MONGODB_URI`, `CLERK_FRONTEND_API`, `CLERK_JWKS_URL`, and **`CORS_ORIGINS`** with your Vercel URLs, e.g.:
+
+```bash
+CORS_ORIGINS=https://your-project.vercel.app,https://your-project-*.vercel.app
+```
+
+Use your real Vercel project URL; `*` matches preview deployments.
+
+### 2. Connect the repo to Vercel
+
+1. Go to [vercel.com](https://vercel.com) → **Add New** → **Project** and import your Git repo.
+2. Set **Root Directory** to `web` (this repo is a monorepo).
+3. Vercel will detect Next.js; leave **Build Command** and **Output Directory** as default.
+
+### 3. Environment variables (Vercel)
+
+In the Vercel project → **Settings** → **Environment Variables**, add:
+
+| Name | Value | Environments |
+|------|--------|--------------|
+| `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` | Your Clerk publishable key | Production, Preview |
+| `CLERK_SECRET_KEY` | Your Clerk secret key | Production, Preview |
+| `NEXT_PUBLIC_API_BASE_URL` | Your deployed API URL (e.g. `https://pixelmind-api.up.railway.app`) | Production, Preview |
+
+### 4. Clerk
+
+In the [Clerk Dashboard](https://dashboard.clerk.com), add your Vercel URLs to **Allowed redirect URLs** and **Allowed origins** (e.g. `https://your-project.vercel.app` and preview URLs if needed).
+
+Then deploy; the first push to `main` or a new deployment will build and go live.
 
 ## PWA
 

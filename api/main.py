@@ -1,25 +1,27 @@
 import os
+from typing import List, Optional
 
+from bson import ObjectId
 from dotenv import load_dotenv
-
-load_dotenv()
-
 from fastapi import Depends, FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi_clerk_auth import ClerkConfig, ClerkHTTPBearer
-from db import get_database
 from motor.motor_asyncio import AsyncIOMotorDatabase
 from pydantic import BaseModel
-from typing import Optional, List
-from bson import ObjectId
 from pymongo import ReturnDocument
 
+from db import get_database
+
+load_dotenv()
 
 app = FastAPI(title="PixelMind API", version="0.1.0")
 
+_cors_origins = os.getenv("CORS_ORIGINS", "http://localhost:3000").strip()
+cors_origins = [o.strip() for o in _cors_origins.split(",") if o.strip()]
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000"],
+    allow_origins=cors_origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
