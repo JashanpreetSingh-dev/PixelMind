@@ -1,4 +1,4 @@
-## ADDED Requirements
+## MODIFIED Requirements
 
 ### Requirement: Tonight tab is visually locked before 8pm
 Before 8:00 PM local time, the Tonight tab SHALL appear visually dimmed (e.g. reduced opacity) and SHALL use a lock icon or equivalent visual indicator. Tapping the Tonight tab before 8pm SHALL be a no-op — the tab SHALL NOT become active and no content SHALL be shown. The Today tab SHALL remain active.
@@ -26,3 +26,9 @@ After the user seals today, the Tonight tab SHALL remain active and tappable but
 - **THEN** the Tonight tab SHALL appear at full opacity without the pulsing dot
 - **AND** SHALL show a subtle completion indicator (✦ or checkmark)
 - **AND** tapping it SHALL display the read-only sealed view
+
+## REMOVED Requirements
+
+### Requirement: Tonight panel shows a stub with reflection prompt and journal link
+**Reason**: Replaced by the full inline journal ritual flow. The Tonight tab now hosts the complete ritual; navigation to `/app/journal` is no longer the write path.
+**Migration**: `/app/journal` becomes a read-only archive. All write functionality is inline in the Tonight tab.

@@ -2,10 +2,10 @@
 
 import { useAuth, useUser } from "@clerk/nextjs";
 import { useQuery } from "@tanstack/react-query";
-import { useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Fragment } from "react";
 import type { CSSProperties } from "react";
-import { fetchDaysClient } from "@/lib/api-client";
+import { fetchDaysClient, fetchJournalTodayClient } from "@/lib/api-client";
 import { isoToLocalDate, localDateToIso } from "@/lib/date";
 
 type Habit = { _id: string; name: string; color?: string; icon?: string };
@@ -90,6 +90,15 @@ const MONTH_ABBREV = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "S
 export function MosaicTab({ habits, todayIso }: MosaicTabProps) {
   const { getToken } = useAuth();
   const { user } = useUser();
+  const [isTodaySealed, setIsTodaySealed] = useState(false);
+
+  useEffect(() => {
+    let cancelled = false;
+    fetchJournalTodayClient(getToken, todayIso)
+      .then((entry) => { if (!cancelled) setIsTodaySealed(entry !== null); })
+      .catch(() => {});
+    return () => { cancelled = true; };
+  }, [getToken, todayIso]);
 
   const signupIso = useMemo(() => {
     if (!user?.createdAt) return null;
@@ -212,11 +221,14 @@ export function MosaicTab({ habits, todayIso }: MosaicTabProps) {
                       cellStyle = {
                         backgroundColor: habitColor,
                         opacity: completedOpacity,
+                        ...(isToday && isTodaySealed ? { boxShadow: "0 0 0 2px #5eead4" } : {}),
                       };
                     } else if (isToday) {
                       cellStyle = {
                         backgroundColor: `${habitColor}40`,
-                        boxShadow: `inset 0 0 0 1.5px ${habitColor}`,
+                        boxShadow: isTodaySealed
+                          ? `inset 0 0 0 1.5px ${habitColor}, 0 0 0 2px #5eead4`
+                          : `inset 0 0 0 1.5px ${habitColor}`,
                       };
                     } else if (isFuture) {
                       cellStyle = { backgroundColor: "rgba(255,255,255,0.03)" };

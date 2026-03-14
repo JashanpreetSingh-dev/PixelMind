@@ -88,7 +88,12 @@ class DayUpsertPayload(BaseModel):
 
 class JournalCreatePayload(BaseModel):
     date: str
-    text: str
+    text: Optional[str] = None
+    mood: Optional[str] = None
+    prompt_id: Optional[int] = None
+    prompt_response: Optional[str] = None
+    free_text: Optional[str] = None
+    sealed: Optional[bool] = None
 
 
 class JournalRangeQuery(BaseModel):
@@ -437,11 +442,23 @@ async def create_journal_entry(
     db: AsyncIOMotorDatabase = get_database()
     coll = db["journal_entries"]
 
-    doc = {
+    doc: dict = {
         "clerk_user_id": clerk_user_id,
         "date": payload.date,
-        "text": payload.text,
     }
+    if payload.text is not None:
+        doc["text"] = payload.text
+    if payload.mood is not None:
+        doc["mood"] = payload.mood
+    if payload.prompt_id is not None:
+        doc["prompt_id"] = payload.prompt_id
+    if payload.prompt_response is not None:
+        doc["prompt_response"] = payload.prompt_response
+    if payload.free_text is not None:
+        doc["free_text"] = payload.free_text
+    if payload.sealed is not None:
+        doc["sealed"] = payload.sealed
+
     result = await coll.insert_one(doc)
     doc["_id"] = str(result.inserted_id)
     return doc
@@ -471,6 +488,27 @@ async def list_journal_entries(
     async for doc in cursor:
         entries.append(serialize_mongo_document(doc))
     return entries
+
+
+@app.get("/journal/today")
+async def get_today_journal_entry(
+    date: str,
+    payload=Depends(clerk_auth_guard),
+) -> dict:
+    """
+    Return today's sealed journal entry for the authenticated user, or null if none exists.
+    date should be the user's local date in YYYY-MM-DD format.
+    """
+    clerk_user_id = _clerk_sub(payload)
+    db: AsyncIOMotorDatabase = get_database()
+    coll = db["journal_entries"]
+
+    doc = await coll.find_one(
+        {"clerk_user_id": clerk_user_id, "date": date, "sealed": True}
+    )
+    if not doc:
+        return {"entry": None}
+    return {"entry": serialize_mongo_document(doc)}
 
 
 @app.get("/insights")

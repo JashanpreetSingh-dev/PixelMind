@@ -7,6 +7,7 @@ import { motion, AnimatePresence, LayoutGroup } from "framer-motion";
 import {
   fetchDaysClient,
   fetchHabitsClient,
+  fetchJournalTodayClient,
   updateHabitClient,
   upsertDayClient,
 } from "@/lib/api-client";
@@ -168,6 +169,7 @@ export function TodayView({
   }, [queryClient, router]);
 
   const [pendingUndo, setPendingUndo] = useState<{ habitId: string; previousIds: string[] } | null>(null);
+  const [isTodaySealed, setIsTodaySealed] = useState(false);
 
   const habits: Habit[] = habitsQuery.data ?? [];
   const days: DayDoc[] = daysQuery.data ?? [];
@@ -289,6 +291,17 @@ export function TodayView({
     queryClient.invalidateQueries({ queryKey: ["days-mosaic"] });
   }, [queryClient, start, end]);
 
+  // Check if today is already sealed (for tonight tab indicator and mosaic glow)
+  useEffect(() => {
+    let cancelled = false;
+    fetchJournalTodayClient(getToken, todayIso)
+      .then((entry) => {
+        if (!cancelled) setIsTodaySealed(entry !== null);
+      })
+      .catch(() => {});
+    return () => { cancelled = true; };
+  }, [getToken, todayIso]);
+
   const greeting = getGreeting();
   const isReflectionUnlocked = new Date().getHours() >= 20;
   const atCapacity = habits.length >= MAX_HABITS;
@@ -371,7 +384,10 @@ export function TodayView({
               {tab === "tonight" && isLocked && (
                 <span className="text-xs" aria-hidden>🔒</span>
               )}
-              {tab === "tonight" && !isLocked && (
+              {tab === "tonight" && !isLocked && isTodaySealed && (
+                <span className="text-xs leading-none text-today-accent" aria-hidden>✦</span>
+              )}
+              {tab === "tonight" && !isLocked && !isTodaySealed && (
                 <span
                   className="h-1.5 w-1.5 rounded-full bg-today-accent animate-pulse"
                   aria-hidden
@@ -432,7 +448,14 @@ export function TodayView({
       )}
 
       {activeTab === "tonight" && (
-        <TonightTab isUnlocked={isReflectionUnlocked} />
+        <TonightTab
+          isUnlocked={isReflectionUnlocked}
+          todayIso={todayIso}
+          onSealComplete={() => {
+            setIsTodaySealed(true);
+            setActiveTab("today");
+          }}
+        />
       )}
 
       {/* Celebration overlay */}

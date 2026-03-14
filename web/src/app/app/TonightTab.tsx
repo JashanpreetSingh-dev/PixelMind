@@ -1,45 +1,91 @@
 "use client";
 
-import Link from "next/link";
+import { useEffect, useRef, useState } from "react";
+import { useAuth } from "@clerk/nextjs";
+import { JournalRitualFlow } from "@/components/JournalRitualFlow";
+import { SealedJournalView } from "@/components/SealedJournalView";
+import { fetchJournalTodayClient, createJournalClient } from "@/lib/api-client";
+import type { JournalEntry } from "@/lib/api-client";
+import type { SealEntry } from "@/components/JournalRitualFlow";
 
 type TonightTabProps = {
   isUnlocked: boolean;
+  todayIso: string;
+  /** Called after seal animation completes — switches to Today tab. */
+  onSealComplete: () => void;
 };
 
-export function TonightTab({ isUnlocked }: TonightTabProps) {
-  if (!isUnlocked) {
-    // Should not be reachable since the tab is a no-op when locked,
-    // but guard here just in case.
-    return null;
+export function TonightTab({ isUnlocked, todayIso, onSealComplete }: TonightTabProps) {
+  const { getToken } = useAuth();
+  const [sealedEntry, setSealedEntry] = useState<JournalEntry | null | undefined>(undefined);
+  const [error, setError] = useState<string | null>(null);
+  const pendingEntryRef = useRef<JournalEntry | null>(null);
+
+  // Load today's seal status on mount
+  useEffect(() => {
+    let cancelled = false;
+    fetchJournalTodayClient(getToken, todayIso)
+      .then((entry) => {
+        if (!cancelled) setSealedEntry(entry);
+      })
+      .catch(() => {
+        if (!cancelled) setSealedEntry(null);
+      });
+    return () => { cancelled = true; };
+  }, [getToken, todayIso]);
+
+  if (!isUnlocked) return null;
+
+  // Loading
+  if (sealedEntry === undefined) {
+    return (
+      <div className="flex flex-col gap-6 py-4">
+        <div className="h-40 rounded-xl border border-today-card-border bg-today-card-bg animate-pulse" />
+      </div>
+    );
   }
 
+  // Already sealed
+  if (sealedEntry !== null) {
+    return <SealedJournalView entry={sealedEntry} />;
+  }
+
+  // Fire API call immediately when user taps Seal (concurrent with animation)
+  const handleSeal = (entry: SealEntry) => {
+    setError(null);
+    createJournalClient(getToken, {
+      date: todayIso,
+      mood: entry.mood,
+      prompt_id: entry.promptId,
+      prompt_response: entry.promptResponse || undefined,
+      free_text: entry.freeText || undefined,
+      sealed: true,
+    })
+      .then((created) => {
+        pendingEntryRef.current = created;
+      })
+      .catch(() => {
+        setError("Couldn't save your entry. Please try again.");
+      });
+  };
+
+  // Called after animation completes (~1.4s after handleSeal)
+  const handleAnimationDone = () => {
+    if (pendingEntryRef.current) {
+      setSealedEntry(pendingEntryRef.current);
+    }
+    onSealComplete();
+  };
+
   return (
-    <div className="flex flex-col gap-6 py-4">
-      <div className="space-y-2">
-        <h2 className="text-xl font-medium text-text-primary">How did today go?</h2>
-        <p className="text-sm text-text-muted">
-          Take a few minutes to reflect on your day — what went well, what was hard, how you felt.
-        </p>
-      </div>
-
-      <div className="rounded-xl border border-today-card-border bg-today-card-bg p-4 space-y-3">
-        <p className="text-xs font-medium uppercase tracking-widest text-text-faint">
-          Tonight&apos;s reflection
-        </p>
-        <p className="text-sm text-text-muted">
-          Write freely or answer a short prompt. Your entries are private and help PixelMind surface patterns over time.
-        </p>
-        <Link
-          href="/app/journal"
-          className="inline-flex items-center gap-2 rounded-full bg-today-accent px-5 py-2.5 text-sm font-medium text-white transition hover:opacity-90"
-        >
-          Start writing →
-        </Link>
-      </div>
-
-      <p className="text-xs text-text-faint text-center">
-        Full reflection experience lives in the Journal tab
-      </p>
-    </div>
+    <>
+      <JournalRitualFlow todayIso={todayIso} onSeal={handleSeal} onAnimationDone={handleAnimationDone} />
+      {error && (
+        <div className="mt-2 rounded-xl border border-red-800/40 bg-red-900/20 px-4 py-3 text-sm text-red-300 flex items-center justify-between gap-3">
+          <span>{error}</span>
+          <button type="button" onClick={() => setError(null)} className="text-xs font-semibold underline shrink-0">Dismiss</button>
+        </div>
+      )}
+    </>
   );
 }

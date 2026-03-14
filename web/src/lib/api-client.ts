@@ -87,3 +87,46 @@ export async function updateHabitClient(
   if (!res.ok) throw new Error("Failed to update habit");
   return res.json();
 }
+
+export type JournalEntry = {
+  _id?: string;
+  date: string;
+  mood?: string;
+  prompt_id?: number;
+  prompt_response?: string;
+  free_text?: string;
+  sealed?: boolean;
+  text?: string;
+};
+
+export async function createJournalClient(
+  getToken: GetToken,
+  entry: {
+    date: string;
+    mood?: string;
+    prompt_id?: number;
+    prompt_response?: string;
+    free_text?: string;
+    sealed?: boolean;
+  }
+) {
+  const res = await authFetch(getToken, `${API_BASE}/journal`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(entry),
+  });
+  if (!res.ok) throw new Error("Failed to create journal entry");
+  return res.json() as Promise<JournalEntry>;
+}
+
+export async function fetchJournalTodayClient(
+  getToken: GetToken,
+  date: string
+): Promise<JournalEntry | null> {
+  const url = new URL(`${API_BASE}/journal/today`);
+  url.searchParams.set("date", date);
+  const res = await authFetch(getToken, url.toString());
+  if (!res.ok) throw new Error("Failed to fetch today's journal entry");
+  const data = await res.json();
+  return data.entry ?? null;
+}

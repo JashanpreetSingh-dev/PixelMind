@@ -42,7 +42,12 @@
       "Bash(grep -rn \"upsertDay\\\\|POST.*days\\\\|days.*POST\" /c/Users/jasha/Desktop/PixelG/api/src --include=\"*.ts\" -l 2>/dev/null | head -5)",
       "Bash(find /c/Users/jasha/Desktop/PixelG -name \"*.ts\" -not -path \"*/node_modules/*\" | xargs grep -l \"completed_habit_ids\" 2>/dev/null | head -10)",
       "Bash(find /c/Users/jasha/Desktop/PixelG -name \"*.py\" -not -path \"*/node_modules/*\" | xargs grep -l \"completed_habit_ids\\\\|days\" 2>/dev/null | head -10)",
-      "Bash(npx tsc:*)"
+      "Bash(npx tsc:*)",
+      "Bash(for dir:*)",
+      "Bash(do echo:*)",
+      "Read(//c/Users/jasha/Desktop/PixelG/$dir/**)",
+      "Bash(done)",
+      "Bash(cp:*)"
     ]
   },
   "enabledPlugins": {
