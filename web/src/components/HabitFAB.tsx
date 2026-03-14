@@ -8,7 +8,7 @@ import { usePathname } from "next/navigation";
 import { creationSheetOpenAtom } from "@/lib/atoms";
 import { fetchHabitsClient } from "@/lib/api-client";
 
-const MAX_HABITS = 10;
+const MAX_HABITS = 20;
 
 export function HabitFAB() {
   const { getToken, isLoaded, isSignedIn } = useAuth();

@@ -11,7 +11,7 @@ import { HABIT_ICONS, suggestIcon } from "@/lib/habit-icons";
 import { createHabitClient } from "@/lib/api-client";
 import { cn } from "@/lib/utils";
 
-const MAX_HABITS = 10;
+const MAX_HABITS = 20;
 const STEP_NAMES = ["Name it", "Appearance", "Rhythm"] as const;
 const DAYS = ["monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday"] as const;
 

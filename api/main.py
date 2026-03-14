@@ -242,7 +242,7 @@ async def list_habits(payload=Depends(clerk_auth_guard)) -> List[dict]:
     return habits
 
 
-MAX_HABITS_PER_USER = 10
+MAX_HABITS_PER_USER = 20
 
 
 @app.post("/habits", status_code=201)

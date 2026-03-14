@@ -25,7 +25,7 @@ import { TonightTab } from "./TonightTab";
 import { getTodayIso as getTodayIsoLib, localDateToIso } from "@/lib/date";
 import { cn } from "@/lib/utils";
 
-const MAX_HABITS = 10;
+const MAX_HABITS = 20;
 type ActiveTab = "today" | "mosaic" | "tonight";
 
 /** Last 30 days in the browser's local timezone (calendar dates). */
